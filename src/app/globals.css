@@ -33,6 +33,12 @@
     --ring: 142.1 73.2% 37.5%;
 
     --radius: 0.5rem;
+
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
   }
 
   .dark {
@@ -44,7 +50,6 @@
 
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-
     --primary: 142.1 73.2% 37.5%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
@@ -63,6 +68,12 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 142.1 73.2% 37.5%;
+
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
   }
 }
 
@@ -75,9 +86,6 @@
   }
 }
 
-/* Removed the old input container styles since we're using a new approach */
-
-/* Hero section background with overlay */
 .hero-bg {
   background-image: linear-gradient(
       rgba(26, 46, 60, 0.7),
@@ -88,7 +96,6 @@
   background-position: center;
 }
 
-/* Animation Classes */
 .animate-on-scroll {
   opacity: 0;
   transform: translateY(20px);
