@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -7,8 +6,8 @@ import Link from "next/link";
 import {
   LayoutDashboard,
   Truck,
-  CalendarClock,
-  ClipboardList,
+  Users,
+  MapPin,
   BarChart2,
   Settings,
   LogOut,
@@ -19,27 +18,41 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
-export default function DashboardLayout({ children }) {
+export default function AdminLayout({ children }) {
   const router = useRouter();
   const { data: session, status } = useSession();
   const { signOut } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [localGovernment, setLocalGovernment] = useState(null);
 
-  //   useEffect(() => {
-  //     if (status === "loading") return;
+  useEffect(() => {
+    if (status === "loading") return;
 
-  //     if (!session) {
-  //       router.push("/signin");
-  //       return;
-  //     }
+    if (!session) {
+      router.push("/signin");
+      return;
+    }
 
-  //     if (!session?.user?.onboardingCompleted) {
-  //       console.log({ session });
-  //       router.push("/onboarding");
-  //       return;
-  //     }
-  //   }, [session, status, router]);
+    if (session?.session?.user.role !== "admin") {
+      router.push("/dashboard");
+      return;
+    }
+    const fetchLocalGovernment = async () => {
+      try {
+        const response = await axios.get(
+          `/api/users/${session?.session?.user?.id}/local-government`
+        );
+        if (response.data.success) {
+          setLocalGovernment(response.data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch local government info:", error);
+      }
+    };
+
+    fetchLocalGovernment();
+  }, [session, status, router]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -57,32 +70,32 @@ export default function DashboardLayout({ children }) {
   const sidebarLinks = [
     {
       name: "Dashboard",
-      href: "/dashboard",
+      href: "/admin/dashboard",
       icon: <LayoutDashboard className="h-5 w-5" />,
     },
     {
-      name: "Schedule Pickup",
-      href: "/dashboard/schedule",
+      name: "Users",
+      href: "/admin/users",
+      icon: <Users className="h-5 w-5" />,
+    },
+    {
+      name: "Vehicles",
+      href: "/admin/vehicles",
       icon: <Truck className="h-5 w-5" />,
     },
     {
-      name: "My Pickups",
-      href: "/dashboard/pickups",
-      icon: <CalendarClock className="h-5 w-5" />,
+      name: "Pickups",
+      href: "/admin/pickups",
+      icon: <MapPin className="h-5 w-5" />,
     },
     {
-      name: "History",
-      href: "/dashboard/history",
-      icon: <ClipboardList className="h-5 w-5" />,
-    },
-    {
-      name: "Reports",
-      href: "/dashboard/reports",
+      name: "Analytics",
+      href: "/admin/analytics",
       icon: <BarChart2 className="h-5 w-5" />,
     },
     {
       name: "Settings",
-      href: "/dashboard/settings",
+      href: "/admin/settings",
       icon: <Settings className="h-5 w-5" />,
     },
   ];
@@ -123,7 +136,7 @@ export default function DashboardLayout({ children }) {
               </div>
               {isSidebarOpen && (
                 <span className="ml-2 text-xl font-semibold text-secondary">
-                  EcoGambia
+                  {localGovernment ? localGovernment.name : "EcoGambia Admin"}
                 </span>
               )}
             </div>
@@ -167,15 +180,18 @@ export default function DashboardLayout({ children }) {
               <div className="flex items-center">
                 <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
                   <span className="text-primary font-semibold">
-                    {session?.user?.firstName?.charAt(0) || "U"}
+                    {session?.session?.user?.firstName?.charAt(0) || "A"}
                   </span>
                 </div>
                 <div className="ml-3">
                   <p className="text-sm font-medium text-gray-700">
-                    {session?.user?.firstName} {session?.user?.lastName}
+                    {session?.session?.user?.firstName}{" "}
+                    {session?.session?.user?.lastName}
                   </p>
                   <p className="text-xs text-gray-500">
-                    {session?.user?.email}
+                    {localGovernment
+                      ? `${localGovernment.name} Admin`
+                      : "Admin"}
                   </p>
                 </div>
               </div>
@@ -184,92 +200,7 @@ export default function DashboardLayout({ children }) {
         </div>
       </aside>
 
-      {/* Mobile Sidebar */}
-      <div className="md:hidden">
-        <button
-          onClick={toggleMobileSidebar}
-          className="fixed top-4 left-4 z-50 p-2 bg-white rounded-md shadow-md"
-        >
-          {isMobileOpen ? (
-            <X className="h-6 w-6 text-gray-600" />
-          ) : (
-            <Menu className="h-6 w-6 text-gray-600" />
-          )}
-        </button>
-
-        {isMobileOpen && (
-          <>
-            <div
-              className="fixed inset-0 bg-black/50 z-30"
-              onClick={toggleMobileSidebar}
-            ></div>
-            <aside className="fixed inset-y-0 left-0 w-64 bg-white shadow-md z-40 flex flex-col p-4">
-              <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center">
-                  <div className="h-8 w-8 bg-primary rounded-full flex items-center justify-center text-white">
-                    <svg
-                      className="h-5 w-5"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                    >
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
-                    </svg>
-                  </div>
-                  <span className="ml-2 text-xl font-semibold text-secondary">
-                    EcoGambia
-                  </span>
-                </div>
-                <button
-                  onClick={toggleMobileSidebar}
-                  className="text-gray-500 hover:text-primary"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-
-              <div className="space-y-1 flex-1">
-                {sidebarLinks.map((link) => (
-                  <Link
-                    key={link.name}
-                    href={link.href}
-                    className="flex items-center px-4 py-3 text-gray-600 hover:bg-primary/10 hover:text-primary rounded-md transition-colors"
-                    onClick={toggleMobileSidebar}
-                  >
-                    {link.icon}
-                    <span className="ml-3">{link.name}</span>
-                  </Link>
-                ))}
-              </div>
-
-              <button
-                onClick={handleSignOut}
-                className="flex items-center mt-auto px-4 py-3 text-gray-600 hover:bg-primary/10 hover:text-primary rounded-md transition-colors"
-              >
-                <LogOut className="h-5 w-5" />
-                <span className="ml-3">Sign Out</span>
-              </button>
-
-              <div className="mt-4 px-4 py-3 bg-gray-50 rounded-md">
-                <div className="flex items-center">
-                  <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
-                    <span className="text-primary font-semibold">
-                      {session?.user?.firstName?.charAt(0) || "U"}
-                    </span>
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-gray-700">
-                      {session?.user?.firstName} {session?.user?.lastName}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {session?.user?.email}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </aside>
-          </>
-        )}
-      </div>
+      {/* Mobile sidebar (similar to above with adjustments) */}
 
       <main
         className={cn(

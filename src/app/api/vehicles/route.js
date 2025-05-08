@@ -4,7 +4,6 @@ import connectDB from "@/lib/mongodb";
 import Vehicle from "@/models/Vehicle";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-// Get all vehicles
 export async function GET(request) {
   try {
     const session = await getServerSession(authOptions);
@@ -48,7 +47,6 @@ export async function GET(request) {
   }
 }
 
-// Create a new vehicle
 export async function POST(request) {
   try {
     const session = await getServerSession(authOptions);

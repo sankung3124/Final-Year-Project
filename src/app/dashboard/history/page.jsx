@@ -59,7 +59,6 @@ export default function PickupHistory() {
         queryParams.push(`status=${statusFilter}`);
       }
 
-      // Add date filter based on selection
       if (dateFilter !== "all") {
         const today = new Date();
         const dateFrom = new Date();
@@ -126,7 +125,6 @@ export default function PickupHistory() {
     }
   };
 
-  // Filter pickups based on search query
   const filteredPickups = pickups.filter((pickup) => {
     if (!searchQuery) return true;
 
@@ -143,7 +141,6 @@ export default function PickupHistory() {
     );
   });
 
-  // Sort pickups based on selected field and direction
   const sortedPickups = [...filteredPickups].sort((a, b) => {
     if (sortField === "scheduledDate") {
       return sortDirection === "asc"
@@ -165,14 +162,12 @@ export default function PickupHistory() {
     return 0;
   });
 
-  // Get current page items
   const currentItems = sortedPickups.slice(
     (page - 1) * itemsPerPage,
     page * itemsPerPage
   );
 
   const exportCsv = () => {
-    // Create CSV header
     const headers = [
       "ID",
       "Date",
@@ -183,7 +178,6 @@ export default function PickupHistory() {
       "City",
     ];
 
-    // Create CSV rows
     const csvRows = [headers.join(",")];
 
     filteredPickups.forEach((pickup) => {

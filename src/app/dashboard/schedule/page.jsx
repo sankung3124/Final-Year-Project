@@ -95,7 +95,6 @@ export default function SchedulePickup() {
       setIsEditing(true);
       fetchPickupDetails(editId);
     } else {
-      // Populate with user's default location
       fetchUserLocation();
     }
   }, [editId]);
@@ -209,7 +208,6 @@ export default function SchedulePickup() {
     setIsSubmitting(true);
 
     try {
-      // Format the data for API
       const pickupData = {
         pickupType: data.pickupType,
         wasteDescription: data.wasteDescription,

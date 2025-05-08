@@ -19,15 +19,18 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+
 export default function OnboardingForm() {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [locationResults, setLocationResults] = useState([]);
   const [searchLocation, setSearchLocation] = useState("");
   const [debouncedLocation, setDebouncedLocation] = useState("");
+  const [loadingLocation, setLoadingLocation] = useState(false);
+
   const form = useForm({
     resolver: zodResolver(onboardingSchema),
     defaultValues: {
@@ -44,11 +47,13 @@ export default function OnboardingForm() {
 
     return () => clearTimeout(timerId);
   }, [searchLocation]);
+
   useEffect(() => {
     if (debouncedLocation.length > 3) {
       fetchLocationSuggestions(debouncedLocation);
     }
   }, [debouncedLocation]);
+
   useEffect(() => {
     if (status === "loading") return;
 
@@ -64,6 +69,7 @@ export default function OnboardingForm() {
 
   useEffect(() => {
     if (navigator.geolocation) {
+      setLoadingLocation(true);
       navigator.geolocation.getCurrentPosition(
         (position) => {
           form.setValue("coordinates", {
@@ -71,13 +77,16 @@ export default function OnboardingForm() {
             lng: position.coords.longitude,
           });
           reverseGeocode(position.coords.latitude, position.coords.longitude);
+          setLoadingLocation(false);
         },
         (error) => {
           console.error("Error getting location:", error);
+          setLoadingLocation(false);
         }
       );
     }
   }, [form]);
+
   const fetchLocationSuggestions = async (query) => {
     try {
       const response = await axios.get(
@@ -101,6 +110,7 @@ export default function OnboardingForm() {
       console.error("Error fetching location suggestions:", error);
     }
   };
+
   const reverseGeocode = async (lat, lng) => {
     try {
       const response = await axios.get(
@@ -116,6 +126,7 @@ export default function OnboardingForm() {
       console.error("Error with reverse geocoding:", error);
     }
   };
+
   const handleLocationSelect = (locationId) => {
     const selectedLocation = locationResults.find(
       (loc) => loc.value === locationId
@@ -128,6 +139,41 @@ export default function OnboardingForm() {
     }
   };
 
+  const getCurrentLocation = () => {
+    setLoadingLocation(true);
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          form.setValue("coordinates", {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+          reverseGeocode(position.coords.latitude, position.coords.longitude);
+          setLoadingLocation(false);
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          toast({
+            title: "Location Error",
+            description:
+              "Unable to get your current location. Please enter it manually.",
+            variant: "destructive",
+          });
+          setLoadingLocation(false);
+        }
+      );
+    } else {
+      toast({
+        title: "Location Not Supported",
+        description:
+          "Geolocation is not supported by your browser. Please enter your location manually.",
+        variant: "destructive",
+      });
+      setLoadingLocation(false);
+    }
+  };
+
   const onSubmit = async (data) => {
     setLoading(true);
 
@@ -136,13 +182,30 @@ export default function OnboardingForm() {
 
       if (response.data.success) {
         setSuccess(true);
+
+        // Update the session directly
+        if (update) {
+          await update({
+            ...session,
+            user: {
+              ...session.user,
+              onboardingCompleted: true,
+            },
+          });
+        }
+
+        // Also call the session update endpoint as a fallback
+        await axios.get("/api/auth/session?update=true");
+
         toast({
           title: "Onboarding complete!",
           description: "Your profile has been updated successfully.",
           variant: "success",
         });
+
         setTimeout(() => {
-          router.push("/dashboard");
+          // Use a hard redirect to ensure a fresh session
+          window.location.href = "/dashboard";
         }, 2000);
       }
     } catch (error) {
@@ -159,6 +222,7 @@ export default function OnboardingForm() {
       setLoading(false);
     }
   };
+
   if (status === "loading") {
     return (
       <div className="flex items-center justify-center py-8">
@@ -214,9 +278,11 @@ export default function OnboardingForm() {
                     <Input
                       placeholder="Search for your address"
                       className="pl-10"
-                      value={searchLocation}
-                      onChange={(e) => setSearchLocation(e.target.value)}
-                      {...field}
+                      value={searchLocation || field.value}
+                      onChange={(e) => {
+                        setSearchLocation(e.target.value);
+                        field.onChange(e.target.value);
+                      }}
                     />
                   </div>
                 </FormControl>
@@ -241,6 +307,47 @@ export default function OnboardingForm() {
               </FormItem>
             )}
           />
+
+          <div className="flex justify-end mb-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={getCurrentLocation}
+              disabled={loadingLocation}
+            >
+              {loadingLocation ? (
+                <>
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-4 w-4"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Getting location...
+                </>
+              ) : (
+                <>
+                  <MapPin className="mr-2 h-4 w-4" />
+                  Use current location
+                </>
+              )}
+            </Button>
+          </div>
 
           <FormField
             control={form.control}

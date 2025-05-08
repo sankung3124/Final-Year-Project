@@ -4,7 +4,6 @@ import connectDB from "@/lib/mongodb";
 import LocalGovernment from "@/models/LocalGovernment";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-// Get all local governments
 export async function GET(request) {
   try {
     const session = await getServerSession(authOptions);
@@ -35,7 +34,6 @@ export async function GET(request) {
   }
 }
 
-// Create a new local government
 export async function POST(request) {
   try {
     const session = await getServerSession(authOptions);

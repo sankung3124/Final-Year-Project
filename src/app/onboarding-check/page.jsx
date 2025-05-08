@@ -1,29 +1,56 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import axios from "axios";
 import { Loader2 } from "lucide-react";
 
 export default function OnboardingCheck() {
   const router = useRouter();
   const { data: session, status } = useSession();
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    if (status === "loading") return;
+    const checkUserStatus = async () => {
+      if (status === "loading") return;
 
-    if (!session) {
-      router.push("/signin");
-      return;
-    }
+      if (!session) {
+        router.push("/signin");
+        return;
+      }
 
-    if (session.user.role === "admin") {
-      router.push("/admin/dashboard");
-    } else if (!session.user.onboardingCompleted) {
-      router.push("/onboarding");
-    } else {
-      router.push("/dashboard");
-    }
+      try {
+        const response = await axios.get("/api/auth/session?update=true");
+
+        const serverSession = response.data.session;
+
+        if (serverSession?.user?.role === "admin") {
+          router.push("/admin/dashboard");
+        } else if (serverSession?.user?.role === "driver") {
+          router.push("/driver/dashboard");
+        } else if (!serverSession?.user?.onboardingCompleted) {
+          router.push("/onboarding");
+        } else {
+          router.push("/dashboard");
+        }
+      } catch (error) {
+        console.error("Error checking user status:", error);
+        if (session.user.role === "admin") {
+          router.push("/admin/dashboard");
+        } else if (session.user.role === "driver") {
+          router.push("/driver/dashboard");
+        } else if (!session.user.onboardingCompleted) {
+          router.push("/onboarding");
+        } else {
+          router.push("/dashboard");
+        }
+      } finally {
+        setChecking(false);
+      }
+    };
+
+    checkUserStatus();
   }, [session, status, router]);
 
   return (

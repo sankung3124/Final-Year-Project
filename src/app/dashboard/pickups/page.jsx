@@ -99,7 +99,6 @@ export default function MyPickups() {
     }
   };
 
-  // Filter pickups based on search query
   const filteredPickups = pickups.filter((pickup) => {
     if (!searchQuery) return true;
 

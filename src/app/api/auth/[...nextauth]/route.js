@@ -41,7 +41,6 @@ export const authOptions = {
             onboardingCompleted: user.onboardingCompleted,
           };
         } catch (error) {
-          console.error("Auth error:", error);
           throw error;
         }
       },
@@ -49,6 +48,13 @@ export const authOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code",
+        },
+      },
       profile(profile) {
         return {
           id: profile.sub,
@@ -64,7 +70,11 @@ export const authOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, session, trigger }) {
+      if (trigger === "update" && session?.user) {
+        token.onboardingCompleted = session.user.onboardingCompleted;
+      }
+
       if (user) {
         token.id = user.id;
         token.firstName = user.firstName;
@@ -72,6 +82,7 @@ export const authOptions = {
         token.role = user.role;
         token.onboardingCompleted = user.onboardingCompleted;
       }
+
       if (account?.provider === "google" && user) {
         try {
           await connectDB();
@@ -101,9 +112,7 @@ export const authOptions = {
             token.onboardingCompleted = existingUser.onboardingCompleted;
             token.role = existingUser.role;
           }
-        } catch (error) {
-          console.error("Error in JWT callback:", error);
-        }
+        } catch (error) {}
       }
 
       return token;
@@ -119,8 +128,8 @@ export const authOptions = {
       return session;
     },
     async redirect({ url, baseUrl }) {
-      if (url.startsWith(baseUrl)) return url;
       if (url.startsWith("/")) return `${baseUrl}${url}`;
+      if (new URL(url).origin === baseUrl) return url;
       return baseUrl;
     },
   },

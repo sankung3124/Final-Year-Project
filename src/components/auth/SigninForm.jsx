@@ -87,7 +87,10 @@ export default function SignInForm() {
 
   const handleGoogleSignIn = async () => {
     try {
-      await signIn("google", { callbackUrl: "/onboarding-check" });
+      await signIn("google", {
+        callbackUrl: "/onboarding-check",
+        redirect: true, // Set to true for redirection
+      });
     } catch (error) {
       console.error("Google sign-in error:", error);
       toast({
