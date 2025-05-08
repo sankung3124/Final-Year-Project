@@ -4,7 +4,6 @@ import connectDB from "@/lib/mongodb";
 import LocalGovernment from "@/models/LocalGovernment";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-// Get a single local government
 export async function GET(request, { params }) {
   try {
     const session = await getServerSession(authOptions);
@@ -42,7 +41,6 @@ export async function GET(request, { params }) {
   }
 }
 
-// Update a local government
 export async function PUT(request, { params }) {
   try {
     const session = await getServerSession(authOptions);
@@ -83,7 +81,6 @@ export async function PUT(request, { params }) {
   }
 }
 
-// Delete a local government
 export async function DELETE(request, { params }) {
   try {
     const session = await getServerSession(authOptions);

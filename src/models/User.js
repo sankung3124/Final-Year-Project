@@ -52,7 +52,13 @@ const UserSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    // Driver specific fields
+    localGovernment: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "LocalGovernment",
+      required: function () {
+        return this.role === "admin" || this.role === "driver";
+      },
+    },
     drivingLicense: {
       number: String,
       expiryDate: Date,
@@ -64,11 +70,6 @@ const UserSchema = new mongoose.Schema(
     assignedTruck: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Truck",
-    },
-    // Admin specific fields
-    localGovernment: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "LocalGovernment",
     },
     createdAt: {
       type: Date,

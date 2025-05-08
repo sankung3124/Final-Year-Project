@@ -1,3 +1,4 @@
+// src/app/driver/layout.jsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -7,9 +8,9 @@ import Link from "next/link";
 import {
   LayoutDashboard,
   Truck,
-  CalendarClock,
-  ClipboardList,
-  BarChart2,
+  Calendar,
+  MapPin,
+  Clock,
   Settings,
   LogOut,
   Menu,
@@ -19,27 +20,26 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 
-export default function DashboardLayout({ children }) {
+export default function DriverLayout({ children }) {
   const router = useRouter();
   const { data: session, status } = useSession();
   const { signOut } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  //   useEffect(() => {
-  //     if (status === "loading") return;
+  useEffect(() => {
+    if (status === "loading") return;
 
-  //     if (!session) {
-  //       router.push("/signin");
-  //       return;
-  //     }
+    if (!session) {
+      router.push("/signin");
+      return;
+    }
 
-  //     if (!session?.user?.onboardingCompleted) {
-  //       console.log({ session });
-  //       router.push("/onboarding");
-  //       return;
-  //     }
-  //   }, [session, status, router]);
+    if (session.user.role !== "driver") {
+      router.push("/dashboard");
+      return;
+    }
+  }, [session, status, router]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -57,32 +57,32 @@ export default function DashboardLayout({ children }) {
   const sidebarLinks = [
     {
       name: "Dashboard",
-      href: "/dashboard",
+      href: "/driver/dashboard",
       icon: <LayoutDashboard className="h-5 w-5" />,
     },
     {
-      name: "Schedule Pickup",
-      href: "/dashboard/schedule",
+      name: "Assigned Pickups",
+      href: "/driver/pickups",
       icon: <Truck className="h-5 w-5" />,
     },
     {
-      name: "My Pickups",
-      href: "/dashboard/pickups",
-      icon: <CalendarClock className="h-5 w-5" />,
+      name: "Schedule",
+      href: "/driver/schedule",
+      icon: <Calendar className="h-5 w-5" />,
+    },
+    {
+      name: "Route Map",
+      href: "/driver/map",
+      icon: <MapPin className="h-5 w-5" />,
     },
     {
       name: "History",
-      href: "/dashboard/history",
-      icon: <ClipboardList className="h-5 w-5" />,
-    },
-    {
-      name: "Reports",
-      href: "/dashboard/reports",
-      icon: <BarChart2 className="h-5 w-5" />,
+      href: "/driver/history",
+      icon: <Clock className="h-5 w-5" />,
     },
     {
       name: "Settings",
-      href: "/dashboard/settings",
+      href: "/driver/settings",
       icon: <Settings className="h-5 w-5" />,
     },
   ];
@@ -123,7 +123,7 @@ export default function DashboardLayout({ children }) {
               </div>
               {isSidebarOpen && (
                 <span className="ml-2 text-xl font-semibold text-secondary">
-                  EcoGambia
+                  EcoGambia Driver
                 </span>
               )}
             </div>
@@ -167,7 +167,7 @@ export default function DashboardLayout({ children }) {
               <div className="flex items-center">
                 <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
                   <span className="text-primary font-semibold">
-                    {session?.user?.firstName?.charAt(0) || "U"}
+                    {session?.user?.firstName?.charAt(0) || "D"}
                   </span>
                 </div>
                 <div className="ml-3">
@@ -216,7 +216,7 @@ export default function DashboardLayout({ children }) {
                     </svg>
                   </div>
                   <span className="ml-2 text-xl font-semibold text-secondary">
-                    EcoGambia
+                    EcoGambia Driver
                   </span>
                 </div>
                 <button
@@ -253,7 +253,7 @@ export default function DashboardLayout({ children }) {
                 <div className="flex items-center">
                   <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
                     <span className="text-primary font-semibold">
-                      {session?.user?.firstName?.charAt(0) || "U"}
+                      {session?.user?.firstName?.charAt(0) || "D"}
                     </span>
                   </div>
                   <div className="ml-3">
