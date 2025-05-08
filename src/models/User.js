@@ -29,7 +29,7 @@ const UserSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["user", "admin"],
+      enum: ["user", "driver", "admin"],
       default: "user",
     },
     onboardingCompleted: {
@@ -43,6 +43,32 @@ const UserSchema = new mongoose.Schema(
         lat: Number,
         lng: Number,
       },
+    },
+    profileImage: {
+      type: String,
+      default: "",
+    },
+    phone: {
+      type: String,
+      trim: true,
+    },
+    // Driver specific fields
+    drivingLicense: {
+      number: String,
+      expiryDate: Date,
+      verified: {
+        type: Boolean,
+        default: false,
+      },
+    },
+    assignedTruck: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Truck",
+    },
+    // Admin specific fields
+    localGovernment: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "LocalGovernment",
     },
     createdAt: {
       type: Date,
