@@ -57,7 +57,7 @@ export default function Dashboard() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-secondary mb-2">Dashboard</h1>
         <p className="text-gray-600">
-          Welcome back, {session?.user?.firstName}! Here's an overview of your
+          Welcome back, {session?.user?.firstName}! Herei s an overview of your
           waste management activities.
         </p>
       </div>
@@ -199,7 +199,7 @@ export default function Dashboard() {
             <CardContent className="p-6">
               <div className="text-center py-6">
                 <p className="text-gray-500 mb-4">
-                  You don't have any upcoming pickups scheduled.
+                  You do not have any upcoming pickups scheduled.
                 </p>
                 <Link href="/dashboard/schedule">
                   <Button>Schedule a Pickup</Button>

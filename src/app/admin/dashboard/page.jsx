@@ -70,7 +70,7 @@ export default function AdminDashboard() {
             : "Admin Dashboard"}
         </h1>
         <p className="text-gray-600">
-          Welcome back, {session?.user?.firstName}! Here's an overview of{" "}
+          Welcome back, {session?.user?.firstName}! Here is an overview of{" "}
           {localGovernment ? localGovernment.name : "your"} waste management
           system.
         </p>
