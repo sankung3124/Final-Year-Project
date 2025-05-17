@@ -29,16 +29,16 @@ export default function SignInForm() {
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   useEffect(() => {
-    if (status === "authenticated" && session?.user) {
-      if (session.user.role === "admin") {
+    if (status === "authenticated" && session?.session?.user) {
+      if (session?.session.user.role === "admin") {
         router.push("/admin/dashboard");
-      } else if (!session.user.onboardingCompleted) {
+      } else if (!session?.session.user.onboardingCompleted) {
         router.push("/onboarding");
       } else {
         router.push("/dashboard");
       }
     }
-  }, [session, status, router]);
+  }, [session, status]);
 
   const form = useForm({
     resolver: zodResolver(signinSchema),
@@ -67,12 +67,14 @@ export default function SignInForm() {
         setLoading(false);
         return;
       }
+      console.log({result})
       if (result?.ok) {
         toast({
           title: "Sign in successful!",
           description: "Welcome to EcoGambia.",
           variant: "success",
         });
+        setLoading(false);
       }
     } catch (error) {
       console.error("Sign in error:", error);
@@ -274,7 +276,7 @@ export default function SignInForm() {
 
       <div className="mt-6 text-center">
         <p className="text-sm text-gray-600">
-          Don't have an account?{" "}
+          Dont have an account?{" "}
           <Link
             href="/signup"
             className="font-medium text-primary hover:text-primary/80"

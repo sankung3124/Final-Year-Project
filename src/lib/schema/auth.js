@@ -25,9 +25,9 @@ export const signupSchema = z
         message: "Password must contain at least one special character",
       }),
     confirmPassword: z.string(),
-    agreeToTerms: z.boolean().refine((val) => val === true, {
-      message: "You must agree to the terms and conditions",
-    }),
+    // agreeToTerms: z.boolean().refine((val) => val === true, {
+    //   message: "You must agree to the terms and conditions",
+    // }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",

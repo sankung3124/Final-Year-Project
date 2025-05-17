@@ -36,11 +36,12 @@ export default function OnboardingCheck() {
         }
       } catch (error) {
         console.error("Error checking user status:", error);
-        if (session.user.role === "admin") {
+        console.log({session})
+        if (session.session.user.role === "admin") {
           router.push("/admin/dashboard");
-        } else if (session.user.role === "driver") {
+        } else if (session.session.user.role === "driver") {
           router.push("/driver/dashboard");
-        } else if (!session.user.onboardingCompleted) {
+        } else if (!session.session.user.onboardingCompleted) {
           router.push("/onboarding");
         } else {
           router.push("/dashboard");

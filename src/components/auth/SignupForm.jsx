@@ -46,7 +46,7 @@ export default function SignUpForm() {
       email: "",
       password: "",
       confirmPassword: "",
-      agreeToTerms: false,
+      agreeToTerms: true,
     },
     mode: "onChange",
   });
@@ -389,7 +389,7 @@ export default function SignUpForm() {
                 )}
               />
 
-              <FormField
+              {/* <FormField
                 control={form.control}
                 name="agreeToTerms"
                 render={({ field }) => (
@@ -421,7 +421,7 @@ export default function SignUpForm() {
                     </div>
                   </FormItem>
                 )}
-              />
+              /> */}
             </>
           )}
 

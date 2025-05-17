@@ -67,8 +67,8 @@ const Footer = () => {
               {[
                 { name: "Home", href: "/" },
                 { name: "About Us", href: "/about" },
-                { name: "Services", href: "/services" },
-                { name: "Schedule Pickup", href: "/schedule" },
+                { name: "Education", href: "/education" },
+                
                 { name: "Recycling Centers", href: "/centers" },
               ].map((link) => (
                 <li key={link.name}>
@@ -83,28 +83,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Resources */}
-          <div className="col-span-1">
-            <h3 className="text-lg font-semibold mb-4">Resources</h3>
-            <ul className="space-y-2">
-              {[
-                { name: "Blog", href: "/blog" },
-                { name: "Educational Resources", href: "/resources" },
-                { name: "FAQ", href: "/faq" },
-                { name: "Community Programs", href: "/programs" },
-                { name: "Partners", href: "/partners" },
-              ].map((link) => (
-                <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    className="text-white/70 hover:text-primary transition-colors"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          
 
           {/* Contact Info */}
           <div className="col-span-1">

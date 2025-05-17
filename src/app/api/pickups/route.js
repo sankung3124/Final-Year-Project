@@ -1,3 +1,10 @@
+import connectDB from "@/lib/mongodb";
+import Pickup from "@/models/Pickup";
+import User from "@/models/User";
+import { getServerSession } from "next-auth";
+import { NextResponse } from "next/server";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
 export async function GET(request) {
   try {
     const session = await getServerSession(authOptions);
@@ -84,6 +91,60 @@ export async function GET(request) {
       .sort({ scheduledDate: -1 });
 
     return NextResponse.json({ success: true, data: pickups }, { status: 200 });
+  } catch (error) {
+    return NextResponse.json(
+      { success: false, message: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    console.log({ session });
+
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    if (session.user.role !== "user") {
+      return NextResponse.json(
+        { success: false, message: "Only users can create pickups" },
+        { status: 403 }
+      );
+    }
+    const body = await request.json();
+    await connectDB();
+    const user = await User.findById(session.user.id).select(
+      "localGovernment location"
+    );
+    const pickup = new Pickup({
+      user: session.user.id,
+      pickupType: body.pickupType,
+      wasteDescription: body.wasteDescription,
+      estimatedWeight: body.estimatedWeight || 0,
+      location: body.location,
+      scheduledDate: body.scheduledDate,
+      preferredTimeSlot: body.preferredTimeSlot,
+      notes: body.notes || "",
+      status: "requested",
+    });
+
+    await pickup.save();
+    const populatedPickup = await Pickup.findById(pickup._id).populate(
+      "user",
+      "firstName lastName email"
+    );
+
+    return NextResponse.json(
+      { success: true, data: populatedPickup },
+      { status: 201 }
+    );
   } catch (error) {
     return NextResponse.json(
       { success: false, message: error.message },

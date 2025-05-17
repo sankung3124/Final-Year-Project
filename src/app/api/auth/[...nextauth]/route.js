@@ -20,14 +20,13 @@ export const authOptions = {
           const user = await User.findOne({ email: credentials.email }).select(
             "+password"
           );
-
           if (!user) {
             throw new Error("No user found with this email");
           }
 
-          const isMatch = await user.matchPassword(credentials.password);
+          const isMatch = await bcrypt.compare(credentials.password, user.password);
 
-          if (!isMatch) {
+          if (isMatch) {
             throw new Error("Invalid password");
           }
 
