@@ -23,13 +23,13 @@ export const authOptions = {
           if (!user) {
             throw new Error("No user found with this email");
           }
-
-          const isMatch = await bcrypt.compare(credentials.password, user.password);
-
-          if (isMatch) {
+          const isMatch = await bcrypt.compare(
+            credentials.password,
+            user.password
+          );
+          if (!isMatch) {
             throw new Error("Invalid password");
           }
-
           return {
             id: user._id.toString(),
             name: `${user.firstName} ${user.lastName}`,
@@ -38,6 +38,7 @@ export const authOptions = {
             email: user.email,
             role: user.role,
             onboardingCompleted: user.onboardingCompleted,
+            localGovernment: user.localGovernment,
           };
         } catch (error) {
           throw error;
@@ -80,6 +81,7 @@ export const authOptions = {
         token.lastName = user.lastName;
         token.role = user.role;
         token.onboardingCompleted = user.onboardingCompleted;
+        token.localGovernment = user.localGovernment;
       }
 
       if (account?.provider === "google" && user) {
@@ -103,12 +105,14 @@ export const authOptions = {
             token.id = newUser._id.toString();
             token.firstName = newUser.firstName;
             token.lastName = newUser.lastName;
+            token.localGovernment = newUser.localGovernment;
             token.onboardingCompleted = false;
           } else {
             token.id = existingUser._id.toString();
             token.firstName = existingUser.firstName;
             token.lastName = existingUser.lastName;
             token.onboardingCompleted = existingUser.onboardingCompleted;
+            token.localGovernment = existingUser.localGovernment;
             token.role = existingUser.role;
           }
         } catch (error) {}
@@ -123,6 +127,7 @@ export const authOptions = {
         session.user.lastName = token.lastName;
         session.user.role = token.role;
         session.user.onboardingCompleted = token.onboardingCompleted;
+        session.user.localGovernment = token.localGovernment;
       }
       return session;
     },

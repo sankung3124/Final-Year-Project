@@ -35,7 +35,7 @@ export default function DriverLayout({ children }) {
       return;
     }
 
-    if (session.user.role !== "driver") {
+    if (session?.session?.user.role !== "driver") {
       router.push("/dashboard");
       return;
     }
@@ -65,16 +65,16 @@ export default function DriverLayout({ children }) {
       href: "/driver/pickups",
       icon: <Truck className="h-5 w-5" />,
     },
-    {
-      name: "Schedule",
-      href: "/driver/schedule",
-      icon: <Calendar className="h-5 w-5" />,
-    },
-    {
-      name: "Route Map",
-      href: "/driver/map",
-      icon: <MapPin className="h-5 w-5" />,
-    },
+    // {
+    //   name: "Schedule",
+    //   href: "/driver/schedule",
+    //   icon: <Calendar className="h-5 w-5" />,
+    // },
+    // {
+    //   name: "Route Map",
+    //   href: "/driver/map",
+    //   icon: <MapPin className="h-5 w-5" />,
+    // },
     {
       name: "History",
       href: "/driver/history",
@@ -167,15 +167,16 @@ export default function DriverLayout({ children }) {
               <div className="flex items-center">
                 <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
                   <span className="text-primary font-semibold">
-                    {session?.user?.firstName?.charAt(0) || "D"}
+                    {session?.session?.user?.firstName?.charAt(0) || "D"}
                   </span>
                 </div>
                 <div className="ml-3">
                   <p className="text-sm font-medium text-gray-700">
-                    {session?.user?.firstName} {session?.user?.lastName}
+                    {session?.session?.user?.firstName}{" "}
+                    {session?.session?.user?.lastName}
                   </p>
                   <p className="text-xs text-gray-500">
-                    {session?.user?.email}
+                    {session?.session?.user?.email}
                   </p>
                 </div>
               </div>
@@ -253,15 +254,16 @@ export default function DriverLayout({ children }) {
                 <div className="flex items-center">
                   <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
                     <span className="text-primary font-semibold">
-                      {session?.user?.firstName?.charAt(0) || "D"}
+                      {session?.session?.user?.firstName?.charAt(0) || "D"}
                     </span>
                   </div>
                   <div className="ml-3">
                     <p className="text-sm font-medium text-gray-700">
-                      {session?.user?.firstName} {session?.user?.lastName}
+                      {session?.session?.user?.firstName}{" "}
+                      {session?.session?.user?.lastName}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {session?.user?.email}
+                      {session?.session?.user?.email}
                     </p>
                   </div>
                 </div>

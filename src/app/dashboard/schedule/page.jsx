@@ -63,6 +63,9 @@ const pickupSchema = z.object({
     required_error: "Please select a time slot",
   }),
   notes: z.string().optional(),
+  localGovernment: z
+    .string()
+    .min(1, { message: "Please select a local government" }),
 });
 
 export default function SchedulePickup() {
@@ -74,6 +77,9 @@ export default function SchedulePickup() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [loadingLocation, setLoadingLocation] = useState(false);
+  const [localGovernments, setLocalGovernments] = useState([]);
+  const [localGovSearch, setLocalGovSearch] = useState("");
+  const [filteredLocalGovernments, setFilteredLocalGovernments] = useState([]);
 
   const form = useForm({
     resolver: zodResolver(pickupSchema),
@@ -87,6 +93,7 @@ export default function SchedulePickup() {
       scheduledDate: format(new Date(), "yyyy-MM-dd"),
       preferredTimeSlot: "morning",
       notes: "",
+      localGovernment: "",
     },
   });
 
@@ -97,7 +104,34 @@ export default function SchedulePickup() {
     } else {
       fetchUserLocation();
     }
+    // Fetch local governments
+    const fetchLocalGovernments = async () => {
+      try {
+        const response = await axios.get("/api/local-governments");
+        if (response.data.success) {
+          setLocalGovernments(response.data.data);
+          setFilteredLocalGovernments(response.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching local governments:", error);
+      }
+    };
+    fetchLocalGovernments();
   }, [editId]);
+
+  useEffect(() => {
+    if (localGovSearch.length === 0) {
+      setFilteredLocalGovernments(localGovernments);
+    } else {
+      setFilteredLocalGovernments(
+        localGovernments.filter(
+          (lg) =>
+            lg.name.toLowerCase().includes(localGovSearch.toLowerCase()) ||
+            lg.region.toLowerCase().includes(localGovSearch.toLowerCase())
+        )
+      );
+    }
+  }, [localGovSearch, localGovernments]);
 
   const fetchPickupDetails = async (id) => {
     try {
@@ -114,6 +148,7 @@ export default function SchedulePickup() {
         scheduledDate: format(new Date(pickup.scheduledDate), "yyyy-MM-dd"),
         preferredTimeSlot: pickup.preferredTimeSlot,
         notes: pickup.notes || "",
+        localGovernment: pickup.localGovernment || "",
       });
     } catch (error) {
       console.error("Error fetching pickup details:", error);
@@ -220,6 +255,7 @@ export default function SchedulePickup() {
         scheduledDate: new Date(data.scheduledDate).toISOString(),
         preferredTimeSlot: data.preferredTimeSlot,
         notes: data.notes || "",
+        localGovernment: data.localGovernment,
       };
 
       if (isEditing) {
@@ -535,6 +571,44 @@ export default function SchedulePickup() {
                   </FormItem>
                 )}
               />
+
+              <div className="border-t border-gray-200 pt-6">
+                <h3 className="text-lg font-medium text-secondary mb-4">
+                  Select Local Government
+                </h3>
+                <FormField
+                  control={form.control}
+                  name="localGovernment"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Local Government</FormLabel>
+                      <FormControl>
+                        <div>
+                          <Input
+                            placeholder="Search local government by name or region"
+                            value={localGovSearch}
+                            onChange={(e) => setLocalGovSearch(e.target.value)}
+                            className="mb-2"
+                          />
+                          <select
+                            className="w-full border rounded-md p-2"
+                            value={field.value}
+                            onChange={field.onChange}
+                          >
+                            <option value="">Select a local government</option>
+                            {filteredLocalGovernments.map((lg) => (
+                              <option key={lg._id} value={lg._id}>
+                                {lg.name} ({lg.region})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <div className="flex justify-end gap-4">
                 <Button

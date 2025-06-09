@@ -4,6 +4,7 @@ import User from "@/models/User";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import Vehicle from "@/models/Vehicle";
 
 export async function GET(request) {
   try {
@@ -27,38 +28,33 @@ export async function GET(request) {
 
     await connectDB();
     if (session.user.role === "admin") {
-      const admin = await User.findById(session.user.id).select(
-        "localGovernment"
-      );
-
-      if (!admin || !admin.localGovernment) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: "Admin not assigned to a local government",
-          },
-          { status: 400 }
+      let localGovernmentId = searchParams.get("localGovernment");
+      if (!localGovernmentId) {
+        const admin = await User.findById(session.user.id).select(
+          "localGovernment"
         );
+        if (!admin || !admin.localGovernment) {
+          return NextResponse.json(
+            {
+              success: false,
+              message: "Admin not assigned to a local government",
+            },
+            { status: 400 }
+          );
+        }
+        localGovernmentId = admin.localGovernment.toString();
       }
-      const localUsers = await User.find({
-        localGovernment: admin.localGovernment,
-      }).select("_id");
-      const userIds = localUsers.map((user) => user._id);
-      query.user = { $in: userIds };
-      if (userId) {
-        query.user = userId;
-      }
+      query.localGovernment = localGovernmentId;
     } else if (session.user.role === "user") {
       query.user = session.user.id;
     } else if (session.user.role === "driver") {
-      const vehicle = await Vehicle.findOne({ driver: session.user.id });
-      if (!vehicle) {
-        return NextResponse.json(
-          { success: false, message: "Driver not assigned to any vehicle" },
-          { status: 400 }
-        );
-      }
-      query.vehicle = vehicle._id;
+      query.assignedDriver = session.user.id;
+    }
+
+    // Allow filtering by assignedDriver via query param (for dashboard, history, etc)
+    const assignedDriverId = searchParams.get("assignedDriver");
+    if (assignedDriverId) {
+      query.assignedDriver = assignedDriverId;
     }
 
     if (vehicleId && session.user.role === "admin") {
@@ -88,10 +84,12 @@ export async function GET(request) {
           select: "firstName lastName email",
         },
       })
+      .populate("assignedDriver", "firstName lastName email")
       .sort({ scheduledDate: -1 });
 
     return NextResponse.json({ success: true, data: pickups }, { status: 200 });
   } catch (error) {
+    console.error("Error in /api/pickups GET:", error);
     return NextResponse.json(
       { success: false, message: error.message },
       { status: 500 }
@@ -120,6 +118,18 @@ export async function POST(request) {
     }
     const body = await request.json();
     await connectDB();
+
+    // Validate localGovernment
+    if (
+      !body.localGovernment ||
+      !body.localGovernment.match(/^[0-9a-fA-F]{24}$/)
+    ) {
+      return NextResponse.json(
+        { success: false, message: "A valid localGovernment is required." },
+        { status: 400 }
+      );
+    }
+
     const user = await User.findById(session.user.id).select(
       "localGovernment location"
     );
@@ -133,6 +143,7 @@ export async function POST(request) {
       preferredTimeSlot: body.preferredTimeSlot,
       notes: body.notes || "",
       status: "requested",
+      localGovernment: body.localGovernment,
     });
 
     await pickup.save();
