@@ -49,8 +49,6 @@ export async function GET(request, { params }) {
     }
 
     // For drivers, check if the pickup is assigned to them
-    console.log("pickup.assignedDriver", pickup.assignedDriver);
-    console.log("session.user.id", session.user.id);
     if (session.user.role === "driver") {
       if (
         !pickup.assignedDriver ||
@@ -68,7 +66,6 @@ export async function GET(request, { params }) {
 
     return NextResponse.json({ success: true, data: pickup }, { status: 200 });
   } catch (error) {
-    console.log("error happens at api/pickup/[id]/routes.ts get", error);
     return NextResponse.json(
       { success: false, message: error.message },
       { status: 500 }
