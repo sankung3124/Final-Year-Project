@@ -75,11 +75,11 @@ export default function DashboardLayout({ children }) {
       href: "/dashboard/history",
       icon: <ClipboardList className="h-5 w-5" />,
     },
-    {
-      name: "Reports",
-      href: "/dashboard/reports",
-      icon: <BarChart2 className="h-5 w-5" />,
-    },
+    // {
+    //   name: "Reports",
+    //   href: "/dashboard/reports",
+    //   icon: <BarChart2 className="h-5 w-5" />,
+    // },
     {
       name: "Settings",
       href: "/dashboard/settings",

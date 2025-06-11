@@ -88,11 +88,11 @@ export default function AdminLayout({ children }) {
       href: "/admin/pickups",
       icon: <MapPin className="h-5 w-5" />,
     },
-    {
-      name: "Analytics",
-      href: "/admin/analytics",
-      icon: <BarChart2 className="h-5 w-5" />,
-    },
+    // {
+    //   name: "Analytics",
+    //   href: "/admin/analytics",
+    //   icon: <BarChart2 className="h-5 w-5" />,
+    // },
     {
       name: "Settings",
       href: "/admin/settings",

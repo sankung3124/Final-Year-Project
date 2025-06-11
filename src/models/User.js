@@ -30,7 +30,7 @@ const UserSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: ["user", "driver", "admin"],
-      default: "user",
+      required: [true, "Role is required"],
     },
     onboardingCompleted: {
       type: Boolean,

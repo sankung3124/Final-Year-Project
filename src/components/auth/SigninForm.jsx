@@ -32,6 +32,8 @@ export default function SignInForm() {
     if (status === "authenticated" && session?.session?.user) {
       if (session?.session.user.role === "admin") {
         router.push("/admin/dashboard");
+      } else if (session?.session.user.role === "driver") {
+        router.push("/driver/dashboard");
       } else if (!session?.session.user.onboardingCompleted) {
         router.push("/onboarding");
       } else {
@@ -67,7 +69,7 @@ export default function SignInForm() {
         setLoading(false);
         return;
       }
-      console.log({result})
+      console.log({ result });
       if (result?.ok) {
         toast({
           title: "Sign in successful!",

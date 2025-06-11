@@ -23,12 +23,20 @@ export default function DriverDashboard() {
   const { toast } = useToast();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [assignedPickups, setAssignedPickups] = useState([]);
 
   useEffect(() => {
     const fetchDashboardStats = async () => {
       try {
         const response = await axios.get("/api/dashboard/stats");
         setStats(response.data.data);
+        // Fetch pickups assigned to this driver
+        if (session?.session?.user?.id) {
+          const pickupsResponse = await axios.get(
+            `/api/pickups?assignedDriver=${session.session.user.id}`
+          );
+          setAssignedPickups(pickupsResponse.data.data);
+        }
       } catch (error) {
         console.error("Error fetching dashboard stats:", error);
         toast({
@@ -42,7 +50,7 @@ export default function DriverDashboard() {
     };
 
     fetchDashboardStats();
-  }, [toast]);
+  }, [toast, session]);
 
   if (loading) {
     return (
@@ -180,12 +188,11 @@ export default function DriverDashboard() {
       {/* Today's Schedule */}
       <div className="mb-8">
         <h2 className="text-xl font-semibold text-secondary mb-4">
-          Today's Schedule
+          Your Assigned Pickups
         </h2>
-
-        {stats?.upcomingPickups?.length > 0 ? (
+        {assignedPickups.length > 0 ? (
           <div className="space-y-4">
-            {stats.upcomingPickups.map((pickup) => (
+            {assignedPickups.map((pickup) => (
               <Card key={pickup._id} className="border-l-4 border-primary">
                 <CardContent className="p-6">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between">
@@ -198,43 +205,27 @@ export default function DriverDashboard() {
                             {
                               weekday: "long",
                               day: "numeric",
-                              month: "long",
+                              month: "short",
+                              year: "numeric",
                             }
                           )}
                         </span>
                       </div>
-                      <div className="flex items-center mb-2">
-                        <Clock className="w-5 h-5 text-gray-500 mr-2" />
-                        <span className="capitalize">
-                          {pickup.preferredTimeSlot} (
-                          {pickup.preferredTimeSlot === "morning"
-                            ? "8am - 12pm"
-                            : pickup.preferredTimeSlot === "afternoon"
-                            ? "12pm - 4pm"
-                            : "4pm - 8pm"}
-                          )
-                        </span>
+                      <div className="text-gray-700 mb-1">
+                        {pickup.wasteDescription}
                       </div>
-                      <div className="flex items-center mb-2">
-                        <MapPin className="w-5 h-5 text-gray-500 mr-2" />
-                        <span>{pickup.location?.address}</span>
+                      <div className="text-xs text-gray-500 mb-1">
+                        Address: {pickup.location?.address}
                       </div>
-                      <div className="flex items-center">
-                        <User className="w-5 h-5 text-gray-500 mr-2" />
-                        <span>
-                          {pickup.user?.firstName} {pickup.user?.lastName}
-                        </span>
+                      <div className="text-xs text-gray-500 mb-1">
+                        Status: {pickup.status}
                       </div>
                     </div>
-
-                    <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="flex flex-col gap-2 min-w-[120px]">
                       <Link href={`/driver/pickups/${pickup._id}`}>
                         <Button variant="outline" size="sm">
                           View Details
                         </Button>
-                      </Link>
-                      <Link href={`/driver/pickups/${pickup._id}/update`}>
-                        <Button size="sm">Update Status</Button>
                       </Link>
                     </div>
                   </div>
@@ -243,22 +234,7 @@ export default function DriverDashboard() {
             ))}
           </div>
         ) : (
-          <Card>
-            <CardContent className="p-6 text-center">
-              <div className="py-8">
-                <Truck className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  No pickups scheduled for today
-                </h3>
-                <p className="text-gray-500 mb-6">
-                  You don't have any pickups assigned for today.
-                </p>
-                <Link href="/driver/schedule">
-                  <Button>View Schedule</Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="text-gray-500">No pickups assigned to you yet.</div>
         )}
       </div>
     </div>

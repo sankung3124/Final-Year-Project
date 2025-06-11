@@ -49,6 +49,8 @@ export const AuthProvider = ({ children }) => {
 
       if (user?.role === "admin") {
         router.push("/admin/dashboard");
+      } else if (user?.role === "driver") {
+        router.push("/driver/dashboard");
       } else if (!user?.onboardingCompleted) {
         router.push("/onboarding");
       } else {

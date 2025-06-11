@@ -19,12 +19,13 @@ export async function POST(request) {
           { status: 400 }
         );
       }
-      const hashedPassword = await bcrypt.hash(password, 10);
+      // The Error was here for hashing the password twice and the shcema pre-save hook was also hashing the password
+      // const hashedPassword = await bcrypt.hash(password, 10);
       const user = await User.create({
         firstName,
         lastName,
         email,
-        password: hashedPassword,
+        password,
         role: "user",
         onboardingCompleted: false,
       });

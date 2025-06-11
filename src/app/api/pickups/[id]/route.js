@@ -27,7 +27,8 @@ export async function GET(request, { params }) {
           path: "driver",
           select: "firstName lastName email",
         },
-      });
+      })
+      .populate("assignedDriver", "firstName lastName email");
 
     if (!pickup) {
       return NextResponse.json(
@@ -47,19 +48,16 @@ export async function GET(request, { params }) {
       );
     }
 
-    // For drivers, check if the pickup is assigned to their vehicle
+    // For drivers, check if the pickup is assigned to them
     if (session.user.role === "driver") {
-      const vehicle = await Vehicle.findOne({ driver: session.user.id });
-
       if (
-        !vehicle ||
-        !pickup.vehicle ||
-        pickup.vehicle._id.toString() !== vehicle._id.toString()
+        !pickup.assignedDriver ||
+        pickup.assignedDriver?._id?.toString() !== session.user.id
       ) {
         return NextResponse.json(
           {
             success: false,
-            message: "Unauthorized - Not assigned to your vehicle",
+            message: "Unauthorized - Not assigned to you",
           },
           { status: 403 }
         );
@@ -162,6 +160,9 @@ export async function PUT(request, { params }) {
           delete body[key];
         }
       });
+    } else if (session.user.role === "admin") {
+      // Admins can update any field, including localGovernment and assignedDriver
+      // No field restrictions
     }
 
     const updatedPickup = await Pickup.findByIdAndUpdate(params.id, body, {
@@ -175,7 +176,8 @@ export async function PUT(request, { params }) {
           path: "driver",
           select: "firstName lastName email",
         },
-      });
+      })
+      .populate("assignedDriver", "firstName lastName email");
 
     return NextResponse.json(
       { success: true, data: updatedPickup },

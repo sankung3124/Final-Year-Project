@@ -94,6 +94,16 @@ const PickupSchema = new mongoose.Schema(
         default: null,
       },
     },
+    localGovernment: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "LocalGovernment",
+      required: true,
+    },
+    assignedDriver: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
   },
   { timestamps: true }
 );
